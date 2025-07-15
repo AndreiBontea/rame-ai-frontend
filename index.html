@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recomandare Rame AI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Recomandare Rame Ochelari</h1>
+
+  <video id="video" autoplay muted playsinline width="640" height="480"></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <div class="input-group">
+    <label for="genul">Gen:</label>
+    <select id="genul">
+      <option value="feminin">Feminin</option>
+      <option value="masculin">Masculin</option>
+    </select>
+
+    <label for="stilul">Stil preferat:</label>
+    <select id="stilul">
+      <option value="elegant">Elegant</option>
+      <option value="modern">Modern</option>
+      <option value="sport">Sport</option>
+    </select>
+  </div>
+
+  <p id="detected-shape">Formă detectată: -</p>
+  <input type="hidden" id="formaFetei">
+  <input type="hidden" id="latimeFata">
+  <input type="hidden" id="inaltimeFata">
+  <input type="hidden" id="distOchi">
+  <input type="hidden" id="latimeBarbie">
+  <input type="hidden" id="raport">
+  <input type="hidden" id="interpupilara">
+  <input type="hidden" id="latimeNas">
+  <input type="hidden" id="inaltimeFrunte">
+  <input type="hidden" id="latimeSprancene">
+
+  <button onclick="trimitePrompt()">Generează recomandare</button>
+  <p id="raspunsGPT"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
