@@ -104,7 +104,7 @@ async function trimitePrompt() {
   raspunsEl.innerText = "Se generează recomandarea...";
 
   try {
-  const response = await fetch("https://HauntingSpeedyIrcbot.contact2207.repl.co/api/recomanda", {
+ const response = await fetch("https://HauntingSpeedyIrcbot.contact2207.repl.co/api/recomanda", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
