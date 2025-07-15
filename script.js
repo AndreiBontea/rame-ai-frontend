@@ -1,119 +1,73 @@
+import express from "express";
+import bodyParser from "body-parser";
+import OpenAI from "openai";
+import "dotenv/config";
+import cors from "cors"; // ✅ Adăugat
 
-function distance(p1, p2) {
-  const dx = p1.x - p2.x;
-  const dy = p1.y - p2.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
+const app = express();
+const port = 3000;
 
-const LANDMARKS = {
-  leftTemple: 234,
-  rightTemple: 454,
-  chin: 152,
-  forehead: 10,
-  leftCheekbone: 93,
-  rightCheekbone: 323,
-  leftJaw: 234,
-  rightJaw: 454,
-  leftEye: 33,
-  rightEye: 263,
-  noseLeft: 168,
-  noseRight: 197,
-  browTop: 151,
-  pupilLeft: 468,
-  pupilRight: 473,
-  browLeftEdge: 127,
-  browRightEdge: 356
-};
+// ✅ Permite requesturi doar de la Vercel
+app.use(cors({
+  origin: "https://rame-ai-frontend.vercel.app"
+}));
 
-function onResults(results) {
-  const landmarks = results.multiFaceLandmarks[0];
-  if (!landmarks) return;
+app.use(bodyParser.json());
+app.use(express.static(".")); // Servește fișierele HTML, CSS, JS
 
-  const latimeFata = distance(landmarks[LANDMARKS.leftTemple], landmarks[LANDMARKS.rightTemple]);
-  const inaltimeFata = distance(landmarks[LANDMARKS.forehead], landmarks[LANDMARKS.chin]);
-  const distOchi = distance(landmarks[LANDMARKS.leftEye], landmarks[LANDMARKS.rightEye]);
-  const latimeBarbie = distance(landmarks[LANDMARKS.leftJaw], landmarks[LANDMARKS.rightJaw]);
-  const distInterpupilara = distance(landmarks[LANDMARKS.pupilLeft], landmarks[LANDMARKS.pupilRight]);
-  const latimeNas = distance(landmarks[LANDMARKS.noseLeft], landmarks[LANDMARKS.noseRight]);
-  const inaltimeFrunte = distance(landmarks[LANDMARKS.forehead], landmarks[LANDMARKS.browTop]);
-  const latimeSprancene = distance(landmarks[LANDMARKS.browLeftEdge], landmarks[LANDMARKS.browRightEdge]);
-  const raport = latimeFata / inaltimeFata;
-
-  let formaFetei = "-";
-  if (raport > 1.1) formaFetei = "Rotundă";
-  else if (raport < 0.85) formaFetei = "Alungită";
-  else formaFetei = "Ovală";
-
-  document.getElementById("detected-shape").textContent = `Formă detectată: ${formaFetei}`;
-  document.getElementById("formaFetei").value = formaFetei;
-  document.getElementById("latimeFata").value = latimeFata.toFixed(2);
-  document.getElementById("inaltimeFata").value = inaltimeFata.toFixed(2);
-  document.getElementById("distOchi").value = distOchi.toFixed(2);
-  document.getElementById("latimeBarbie").value = latimeBarbie.toFixed(2);
-  document.getElementById("raport").value = raport.toFixed(2);
-  document.getElementById("interpupilara").value = distInterpupilara.toFixed(2);
-  document.getElementById("latimeNas").value = latimeNas.toFixed(2);
-  document.getElementById("inaltimeFrunte").value = inaltimeFrunte.toFixed(2);
-  document.getElementById("latimeSprancene").value = latimeSprancene.toFixed(2);
-}
-
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-const faceMesh = new FaceMesh({
-  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-});
-faceMesh.setOptions({
-  maxNumFaces: 1,
-  refineLandmarks: true,
-  minDetectionConfidence: 0.5
-});
-faceMesh.onResults(onResults);
-
-navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-  video.srcObject = stream;
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-const camera = new Camera(video, {
-  onFrame: async () => {
-    await faceMesh.send({ image: video });
-  },
-  width: 640,
-  height: 480
-});
-camera.start();
-
-async function trimitePrompt() {
-  const payload = {
-    formaFetei: document.getElementById("formaFetei").value,
-    genul: document.getElementById("genul").value,
-    stilul: document.getElementById("stilul").value,
-    latimeFata: document.getElementById("latimeFata").value,
-    inaltimeFata: document.getElementById("inaltimeFata").value,
-    distOchi: document.getElementById("distOchi").value,
-    latimeBarbie: document.getElementById("latimeBarbie").value,
-    raport: document.getElementById("raport").value,
-    interpupilara: document.getElementById("interpupilara").value,
-    latimeNas: document.getElementById("latimeNas").value,
-    inaltimeFrunte: document.getElementById("inaltimeFrunte").value,
-    latimeSprancene: document.getElementById("latimeSprancene").value
-  };
-
-  const raspunsEl = document.getElementById("raspunsGPT");
-  raspunsEl.innerText = "Se generează recomandarea...";
+app.post("/api/recomanda", async (req, res) => {
+  const {
+    formaFetei, genul, stilul,
+    latimeFata, inaltimeFata, distOchi,
+    latimeBarbie, raport, interpupilara,
+    latimeNas, inaltimeFrunte, latimeSprancene,
+  } = req.body;
 
   try {
-const response = await fetch("https://f3b3e517-a73a-467e-95ee-7462e128edc5-00-1hkm44d67vbh5.picard.replit.dev/api/recomanda", {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4", // sau "gpt-3.5-turbo"
+      messages: [
+        {
+          role: "system",
+          content: `Ești un consultant profesionist în alegerea ramelor de ochelari, expert în interpretarea trăsăturilor faciale și proporțiilor. Răspunsurile tale trebuie să fie clare, personalizate și profesioniste, adaptate fiecărui client.`
+        },
+        {
+          role: "user",
+          content: `
+Clientul are următorul profil:
+- Formă față: ${formaFetei}
+- Gen: ${genul}
+- Stil preferat: ${stilul}
+- Lățime față: ${latimeFata}
+- Înălțime față: ${inaltimeFata}
+- Raport lățime/înălțime: ${raport}
+- Lățime bărbie: ${latimeBarbie}
+- Distanță între ochi: ${distOchi}
+- Distanță interpupilară: ${interpupilara}
+- Lățime nas: ${latimeNas}
+- Înălțime frunte: ${inaltimeFrunte}
+- Lățime sprâncene: ${latimeSprancene}
 
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+Pe baza acestor trăsături, oferă o recomandare profesionistă în 3–5 fraze despre ce tip de rame de ochelari i se potrivesc cel mai bine. Argumentează alegerea ținând cont de proporții, stil și gen.
+`
+        }
+      ],
+      temperature: 0.7
     });
-    const data = await response.json();
-    raspunsEl.innerText = data.raspuns || "Eroare: nu s-a primit un răspuns valid.";
+
+    const mesaj = completion.choices?.[0]?.message?.content || "Nu s-a primit un răspuns.";
+    res.json({ raspuns: mesaj });
+
   } catch (error) {
-    raspunsEl.innerText = "Eroare la generarea recomandării.";
-    console.error(error);
+    console.error("Eroare GPT:", error.response?.data || error.message);
+    res.status(500).json({ raspuns: "Eroare: nu s-a primit un răspuns valid." });
   }
-}
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
