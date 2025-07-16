@@ -107,7 +107,7 @@ async function trimitePrompt() {
       body: JSON.stringify(payload)
     });
     const data = await response.json();
-    raspunsEl.innerText = data.raspuns || "Eroare: nu s-a primit un răspuns valid.";
+    raspunsEl.innerText = data.recomandare || "Eroare: nu s-a primit un răspuns valid.";
   } catch (error) {
     raspunsEl.innerText = "Eroare la generarea recomandării.";
     console.error(error);
