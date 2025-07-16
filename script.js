@@ -83,9 +83,9 @@ camera.start();
 
 async function trimitePrompt() {
   const payload = {
-    formaFetei: document.getElementById("formaFetei").value,
-    genul: document.getElementById("genul").value,
-    stilul: document.getElementById("stilul").value,
+        gen: document.getElementById("genul").value,
+    stil: document.getElementById("stilul").value,
+    forma: document.getElementById("formaFetei").value,
     latimeFata: document.getElementById("latimeFata").value,
     inaltimeFata: document.getElementById("inaltimeFata").value,
     distOchi: document.getElementById("distOchi").value,
