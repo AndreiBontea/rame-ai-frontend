@@ -101,7 +101,7 @@ async function trimitePrompt() {
   raspunsEl.innerText = "Se generează recomandarea...";
 
   try {
-    const response = await fetch("https://f3b3e517-a73a-467e-95ee-7462e128edc5-00-1hkm44d67vbh5.picard.replit.dev/api/recomanda", {
+   const response = await fetch("https://rame-ai-backend.vercel.app/api/recomanda", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
